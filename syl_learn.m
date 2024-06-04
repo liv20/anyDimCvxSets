@@ -277,7 +277,7 @@ for nn = 1:length(ns)
     fprintf("---------- n = %d ---------- \n", ns(nn))
 
     % generate new data at a higher dimension
-    [Xtils_test, ~] = syl_gen_dataset(cfg.test_size, ns(nn), hp.k, hp.d, hp.noise);
+    [Xtils_test, Xtrues_test] = syl_gen_dataset(cfg.test_size, ns(nn), hp.k, hp.d, hp.noise);
 
     % restrict extended description to current dimension
     lambda = res.lambda;
@@ -301,7 +301,7 @@ for nn = 1:length(ns)
                 rec_sv(nn, ii, jj) = rec_sv(nn, ii, jj) + log10(temp + eps);
             end
             rec_sv(nn, ii, jj) = rec_sv(nn, ii, jj) / (length(ns) - 1);
-            rec_L2(nn, ii, jj) = norm(Xrec - Xtils_test(:,:,ii), 'fro');
+            rec_L2(nn, ii, jj) = norm(Xrec - Xtrues_test(:,:,ii), 'fro');
         
             Xnuc = syl_recover_with_nuclear_norm(Xtils_test(:,:,ii), reg_params(jj));  % lambda
             for nnn = 1 : ns(nn) - 1
@@ -311,7 +311,7 @@ for nn = 1:length(ns)
                 nn_sv(nn, ii, jj) = nn_sv(nn, ii, jj) + log10(temp + eps);
             end
             nn_sv(nn, ii, jj) = nn_sv(nn, ii, jj) / (length(ns) - 1);
-            nn_L2(nn, ii, jj) = norm(Xnuc - Xtils_test(:,:,ii), 'fro');
+            nn_L2(nn, ii, jj) = norm(Xnuc - Xtrues_test(:,:,ii), 'fro');
         end
     end
 
@@ -321,11 +321,11 @@ for nn = 1:length(ns)
     nn_L2_ = mean(squeeze(nn_L2(nn,:,:)), 1);
     
     % Plotting
-    plot(log10_rec_sv, rec_L2_, '-s', 'DisplayName', sprintf('ours %d', ns(nn)));
+    plot(log10_rec_sv, rec_L2_, '-s', 'DisplayName', sprintf('SRV regularizer, n = %d', ns(nn)));
     hold on;
-    plot(log10_nn_sv, nn_L2_, '-s', 'DisplayName', sprintf('NN n = %d', ns(nn)));
-    xlabel('log10 Singular Value');
-    ylabel('L2 Distance Between Noisy and Recovered Matrices')
+    plot(log10_nn_sv, nn_L2_, '-s', 'DisplayName', sprintf('nuclear norm regularizer, n = %d', ns(nn)));
+    xlabel('log10 singular value');
+    ylabel('L2 Distance')
     legend('show', 'Location', 'southwest');
 
     grid on;
